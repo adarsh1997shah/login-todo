@@ -1,0 +1,12 @@
+.home-wrapper {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.items-wrapper {
+  margin-top: 20px;
+}
+
+.shadow-none {
+  box-shadow: none !important;
+}

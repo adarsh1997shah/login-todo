@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Grid,
@@ -11,39 +11,11 @@ import {
   FormControl,
   ButtonToolbar,
   List,
-  Alert,
 } from 'rsuite';
+import ListItems from '../components/ListItems';
+import { useItemReducer } from '../misc/helper';
 
-const reducer = (prevItems, action) => {
-  let data = [];
-
-  switch (action.type) {
-    case 'ADD':
-      if (prevItems.some(item => item.title === action.data.title)) {
-        Alert.error('Item with title already declared', 4000);
-        data = prevItems;
-      } else {
-        data = [...prevItems, action.data];
-      }
-      break;
-    case 'REMOVE':
-      data = prevItems.filter(item => item.id !== action.id);
-      break;
-    case 'SAVE':
-      data = prevItems.map(item => {
-        if (item.id === action.data.id) {
-          return action.data;
-        } else {
-          return item;
-        }
-      });
-      break;
-    default:
-      Alert.error('Invalid operation', 4000);
-  }
-
-  return data;
-};
+import '../styles/home.css';
 
 const initialState = {
   title: '',
@@ -51,10 +23,13 @@ const initialState = {
 };
 
 function Home() {
-  const [items, dispatch] = useReducer(reducer, []);
+  const [items, dispatch] = useItemReducer();
   const [isSave, setIsSave] = useState(false);
-
   const [formValue, setFormValue] = useState(initialState);
+
+  const handleFormReset = () => {
+    setFormValue(initialState);
+  };
 
   const handleFormChange = value => {
     setFormValue(value);
@@ -86,7 +61,7 @@ function Home() {
 
   return (
     <>
-      <Grid fluid>
+      <Grid fluid className="home-wrapper">
         <Row>
           <Col xs={22} md={18} xsOffset={1} mdOffset={3}>
             <Panel shaded header={<h4>Add or Save Item</h4>}>
@@ -119,6 +94,13 @@ function Home() {
                       Add
                     </Button>
                   )}
+                  <Button
+                    appearance="primary"
+                    color="green"
+                    onClick={handleFormReset}
+                  >
+                    Reset
+                  </Button>
                 </ButtonToolbar>
               </Form>
             </Panel>
@@ -127,31 +109,24 @@ function Home() {
 
         <Row>
           <Col xs={22} md={18} xsOffset={1} mdOffset={3}>
-            <Panel shaded header={<h4>Items</h4>}>
-              <List hover>
+            <Panel shaded header={<h4>Items</h4>} className="items-wrapper">
+              <List
+                hover
+                className={`list-wrapper ${
+                  items.length === 0 ? 'shadow-none' : null
+                }`}
+              >
                 {items.length !== 0 ? (
                   items.map(item => (
-                    <List.Item key={item.id}>
-                      <div>{item.title}</div>
-                      <div>{item.desc}</div>
-                      <Button
-                        appearance="primary"
-                        color="red"
-                        onClick={() => handleItemDelete(item.id)}
-                      >
-                        Delete
-                      </Button>
-                      <Button
-                        appearance="primary"
-                        color="orange"
-                        onClick={() => handleItemEdit(item.id)}
-                      >
-                        Edit
-                      </Button>
-                    </List.Item>
+                    <ListItems
+                      key={item.id}
+                      item={item}
+                      handleItemDelete={handleItemDelete}
+                      handleItemEdit={handleItemEdit}
+                    />
                   ))
                 ) : (
-                  <div>No</div>
+                  <List.Item>Currently no items present</List.Item>
                 )}
               </List>
             </Panel>
