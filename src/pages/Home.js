@@ -1,86 +1,165 @@
-import React, { useState } from 'react';
-import {Input, InputGroup, Button} from 'rsuite';
+import React, { useReducer, useState } from 'react';
+import {
+  Button,
+  Grid,
+  Row,
+  Col,
+  Panel,
+  Form,
+  FormGroup,
+  ControlLabel,
+  FormControl,
+  ButtonToolbar,
+  List,
+  Alert,
+} from 'rsuite';
+
+const reducer = (prevItems, action) => {
+  let data = [];
+
+  switch (action.type) {
+    case 'ADD':
+      if (prevItems.some(item => item.title === action.data.title)) {
+        Alert.error('Item with title already declared', 4000);
+        data = prevItems;
+      } else {
+        data = [...prevItems, action.data];
+      }
+      break;
+    case 'REMOVE':
+      data = prevItems.filter(item => item.id !== action.id);
+      break;
+    case 'SAVE':
+      data = prevItems.map(item => {
+        if (item.id === action.data.id) {
+          return action.data;
+        } else {
+          return item;
+        }
+      });
+      break;
+    default:
+      Alert.error('Invalid operation', 4000);
+  }
+
+  return data;
+};
+
+const initialState = {
+  title: '',
+  desc: '',
+};
 
 function Home() {
-	const [itemValue, setItemValue] = useState({title: '', desc: ''});
-	const [editIndex, setEditIndex] = useState(null);
-	const [isSave, setIsSave] = useState(false);
-	const [items, setItems] = useState([]);
+  const [items, dispatch] = useReducer(reducer, []);
+  const [isSave, setIsSave] = useState(false);
 
-	const handleNameChange = (value) => {
-		setItemValue( p=> ({...p, title: value}));
-	}
+  const [formValue, setFormValue] = useState(initialState);
 
-	const handlePasswordChange = (value) => {
-		setItemValue( p=> ({...p, desc: value}));
-	}
+  const handleFormChange = value => {
+    setFormValue(value);
+  };
 
-	const handleItemAdd = () => {
-		if(itemValue.name !== '' && itemValue.desc !== '') {
-			const data = [...items];
-			data.push(itemValue);
-			setItems(data);
-			setItemValue({title: '', desc: ''});
-		}
-	}
+  const handleItemAdd = () => {
+    dispatch({ type: 'ADD', data: { id: Date.now(), ...formValue } });
 
-	const handleItemEdit = (index) => {
-		setItemValue(items[index]);
-		setEditIndex(index);
-		setIsSave(true);
-	}
+    setFormValue(initialState);
+  };
 
-	const handleItemDelete = (index) => {
-		const data = [...items];
-		data.splice(index, 1);
-		setItems(data);
-	}
+  const handleItemEdit = id => {
+    const item = items.find(item => item.id === id);
 
-	const handleItemSave = () => {
-		const data = items.map((item, index) => index === editIndex? itemValue: item);
+    setFormValue(item);
+    setIsSave(true);
+  };
 
-		setItems(data);
-		setItemValue({title: '', desc: ''});
-		setIsSave(false);
-	}
+  const handleItemDelete = id => {
+    dispatch({ type: 'REMOVE', id });
+  };
 
-	console.log(items);
+  const handleItemSave = () => {
+    dispatch({ type: 'SAVE', data: formValue });
 
-	return <div>
-		<InputGroup>
-			<h5>Title</h5>
-			<Input onChange={handleNameChange} value={itemValue.title} type="text" />
-		</InputGroup>
+    setFormValue(initialState);
+    setIsSave(false);
+  };
 
-		<InputGroup>
-			<h5>Desc</h5>
-			<Input onChange={handlePasswordChange} value={itemValue.desc} />
-		</InputGroup>
+  return (
+    <>
+      <Grid fluid>
+        <Row>
+          <Col xs={22} md={18} xsOffset={1} mdOffset={3}>
+            <Panel shaded header={<h4>Add or Save Item</h4>}>
+              <Form fluid onChange={handleFormChange} formValue={formValue}>
+                <FormGroup>
+                  <ControlLabel>Title</ControlLabel>
+                  <FormControl
+                    name="title"
+                    required
+                    placeholder="Enter Title"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <ControlLabel>Description</ControlLabel>
+                  <FormControl
+                    rows={4}
+                    name="desc"
+                    componentClass="textarea"
+                    required
+                    placeholder="Enter Description"
+                  />
+                </FormGroup>
+                <ButtonToolbar>
+                  {isSave ? (
+                    <Button appearance="primary" onClick={handleItemSave}>
+                      Save
+                    </Button>
+                  ) : (
+                    <Button appearance="primary" onClick={handleItemAdd}>
+                      Add
+                    </Button>
+                  )}
+                </ButtonToolbar>
+              </Form>
+            </Panel>
+          </Col>
+        </Row>
 
-		{
-			!isSave ? 
-		<Button appearance="primary" onClick={handleItemAdd}>Add</Button>
-		:
-		<Button appearance="primary" onClick={handleItemSave}>Save</Button>
-		}
-
-		<div>
-		<ul>
-			{
-				items.length !== 0?
-				items.map((item, index) => (
-					<li key={index}>
-						<div>Title: {item.title}</div>
-						<div>Description: {item.desc}</div>
-						<Button appearance="primary" onClick={() => handleItemEdit(index)}>Edit</Button>
-						<Button appearance="primary" onClick={() => handleItemDelete(index)}>Delete</Button>
-					</li>))
-				:
-				<li>No items added</li>
-			}
-		</ul>
-		</div>
-	</div>
+        <Row>
+          <Col xs={22} md={18} xsOffset={1} mdOffset={3}>
+            <Panel shaded header={<h4>Items</h4>}>
+              <List hover>
+                {items.length !== 0 ? (
+                  items.map(item => (
+                    <List.Item key={item.id}>
+                      <div>{item.title}</div>
+                      <div>{item.desc}</div>
+                      <Button
+                        appearance="primary"
+                        color="red"
+                        onClick={() => handleItemDelete(item.id)}
+                      >
+                        Delete
+                      </Button>
+                      <Button
+                        appearance="primary"
+                        color="orange"
+                        onClick={() => handleItemEdit(item.id)}
+                      >
+                        Edit
+                      </Button>
+                    </List.Item>
+                  ))
+                ) : (
+                  <div>No</div>
+                )}
+              </List>
+            </Panel>
+          </Col>
+        </Row>
+      </Grid>
+    </>
+  );
 }
 
 export default Home;
