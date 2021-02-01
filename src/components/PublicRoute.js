@@ -3,10 +3,10 @@ import { Redirect, Route } from 'react-router-dom';
 import { useLogin } from './context/login.context';
 
 function PublicRoute({ children, ...routeProps }) {
-  const login = useLogin();
+  const { loginData } = useLogin();
 
-  if (!login) {
-    return <Redirect to="/login" />;
+  if (loginData) {
+    return <Redirect to="/" />;
   }
 
   return <Route {...routeProps}>{children}</Route>;

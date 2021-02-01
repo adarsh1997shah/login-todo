@@ -8,12 +8,14 @@ export function LoginContext({ children }) {
   useEffect(() => {
     if (localStorage.getItem('login')) {
       setLoginData(JSON.parse(localStorage.getItem('login')));
-    } else {
-      setLoginData(null);
     }
   }, []);
 
-  return <Login.Provider value={loginData}>{children}</Login.Provider>;
+  return (
+    <Login.Provider value={{ loginData, setLoginData }}>
+      {children}
+    </Login.Provider>
+  );
 }
 
 export const useLogin = () => useContext(Login);

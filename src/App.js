@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Switch } from 'react-router-dom';
 import { LoginContext } from './components/context/login.context';
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
@@ -12,12 +12,13 @@ function App() {
       <BrowserRouter>
         <LoginContext>
           <Switch>
-            <PrivateRoute path="/login" exact>
+            <PublicRoute path="/login">
               <Login />
-            </PrivateRoute>
-            <PublicRoute exact path="/">
-              <Home />
             </PublicRoute>
+
+            <PrivateRoute path="/">
+              <Home />
+            </PrivateRoute>
           </Switch>
         </LoginContext>
       </BrowserRouter>

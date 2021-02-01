@@ -13,6 +13,7 @@ import {
   Row,
   Col,
 } from 'rsuite';
+import { useLogin } from '../components/context/login.context';
 
 import '../styles/login.css';
 
@@ -23,11 +24,14 @@ const initialState = {
 
 function Login() {
   const [formValue, setFormValue] = useState(initialState);
+  const { setLoginData } = useLogin();
   const history = useHistory();
 
   const handleFormSubmit = () => {
     if (formValue.name !== '' && formValue.name !== '') {
       localStorage.setItem('login', JSON.stringify(formValue));
+
+      setLoginData(formValue);
       setFormValue(initialState);
       history.push('/');
     }
@@ -60,11 +64,7 @@ function Login() {
                   <HelpBlock>Required</HelpBlock>
                 </FormGroup>
                 <ButtonToolbar>
-                  <Button
-                    appearance="primary"
-                    type="submit"
-                    onClick={handleFormSubmit}
-                  >
+                  <Button appearance="primary" onClick={handleFormSubmit}>
                     Submit
                   </Button>
                 </ButtonToolbar>
